@@ -40,7 +40,6 @@ export class mpvdaemon {
             if (!that.daemonized) {
 
                 try {
-                    console.log("mpv --idle " + that.socketconf + "=" + that.socketfile)
                     spawn("mpv", ["--idle", that.socketconf + "=" + that.socketfile], { detached: true })
                     setTimeout(() => {
 
@@ -112,6 +111,15 @@ export class mpvdaemon {
             that.mpv_process.write(JSON.stringify({ "command": ["loadfile", play_path] }) + "\r\n", () => {
                 resolve(true)
             });
+
+
+        })
+    }
+    pause() {
+        const that = this;
+
+        return new Promise<true>((resolve, reject) => {
+
 
 
         })
