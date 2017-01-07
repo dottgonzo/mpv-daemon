@@ -104,7 +104,7 @@ export class mpvdaemon {
 
         })
     }
-    loadList(playlist_path:string) {
+    loadListfromFile(playlist_path: string) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
             pathExists(playlist_path, (err, exists) => {
@@ -113,6 +113,21 @@ export class mpvdaemon {
                         resolve(true)
                     });
                 }
+            })
+
+        });
+
+    }
+
+    loadList(tracks: ITrack[]) {
+        const that = this;
+        return new Promise<true>((resolve, reject) => {
+            _.map(tracks, (t) => {
+
+            })
+
+            that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path] }) + "\r\n", () => {
+                resolve(true)
             })
 
         });
@@ -163,26 +178,7 @@ export class mpvdaemon {
 
         })
     }
-    setTracks(tracks: ITrack[]) {
-        return new Promise<true>((resolve, reject) => {
-            let list: string = ""
-            _.map(tracks, (c) => {
-                if (c) {
-                    list += ""
-                }
-            })
 
-            fs.writeFile("/tmp/mpvplaylist.pls", list, function (err) {
-
-                if (err) {
-                    reject({ error: err })
-                } else {
-                    resolve(true)
-                }
-            })
-        })
-
-    }
 
 
 }
