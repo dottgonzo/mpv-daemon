@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "bluebird": "registry:dt/bluebird#3.0.0+20161229155504",
-    "lodash": "registry:dt/lodash#4.14.0+20170106153921"
+    "lodash": "registry:dt/lodash#4.14.0+20170106153921",
+    "path-exists": "registry:dt/path-exists#1.0.0+20160428043022"
   }
 }

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/dottgonzo/mpv-daemon#readme",
   "dependencies": {
     "bluebird": "^3.4.7",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "path-exists": "^3.0.0"
   }
 }

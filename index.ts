@@ -1,6 +1,7 @@
 import { spawn } from "child_process"
 import * as Promise from "bluebird";
 import * as _ from "lodash";
+import * as pathExists from "path-exists";
 import * as net from "net";
 
 interface ITrack {
@@ -102,6 +103,20 @@ export class mpvdaemon {
 
 
         })
+    }
+    loadList(playlist_path:string) {
+        const that = this;
+        return new Promise<true>((resolve, reject) => {
+            pathExists(playlist_path, (err, exists) => {
+                if (!err && exists) {
+                    that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path] }) + "\r\n", () => {
+                        resolve(true)
+                    });
+                }
+            })
+
+        });
+
     }
     play(play_path) {
         const that = this;
