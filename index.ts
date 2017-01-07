@@ -3,9 +3,15 @@ import * as Promise from "bluebird";
 import * as _ from "lodash";
 import * as pathExists from "path-exists";
 import * as net from "net";
+import * as fs from "fs";
+import { uniqueid } from "unicoid";
+
+
 
 interface ITrack {
-
+    title?: string;
+    label: string;
+    uri: string;
 }
 
 interface Impvconf {
@@ -104,17 +110,31 @@ export class mpvdaemon {
 
         })
     }
-    loadListfromFile(playlist_path: string) {
+    loadListfromFile(playlist_path: string, tracks?: ITrack[]) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
-            pathExists(playlist_path, (err, exists) => {
-                if (!err && exists) {
-                    that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path] }) + "\r\n", () => {
-                        resolve(true)
-                    });
-                }
-            })
+            if (playlist_path && playlist_path.split('.pls').length > 1) {
+                pathExists(playlist_path, (err, exists) => {
+                    if (!err && exists) {
+                        that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path] }) + "\r\n", () => {
+                            if (tracks) {
+                                _.map(tracks, (t, i) => {
+                                    if (!t.label) t.label = uniqueid(4)
+                                    that.playlist.push(t)
+                                })
+                            } else {
+                                // parse file to load the list on class
+                            }
+                            resolve(true)
+                        });
+                    } else {
+                        reject({ error: "wrong path" })
+                    }
+                })
+            } else {
+                reject({ error: "file must be a .pls file" })
 
+            }
         });
 
     }
@@ -122,13 +142,33 @@ export class mpvdaemon {
     loadList(tracks: ITrack[]) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
-            _.map(tracks, (t) => {
 
+            const filepath = "/tmp/mpvfilelist.pls"
+            let filelist = "[playlist]\n\n"
+
+            _.map(tracks, (t, i) => {
+                filelist += "File" + (i + 1) + "=" + t.uri + "\n"
+                if (t.title) filelist += "Title" + (i + 1) + "=" + t.title + "\n"
+                filelist += "\n"
+                if (!t.label) t.label = uniqueid(4)
+            })
+            filelist += "\n"
+            filelist += "NumberOfEntries=" + tracks.length + "\n"
+            filelist += "Version=2"
+
+            fs.writeFile(filepath, filelist, {}, (err) => {
+                if (err) {
+                    reject({ error: err })
+                } else {
+                    that.loadListfromFile(filepath).then((a) => {
+                        resolve(a)
+                    }).catch((err) => {
+                        reject(err)
+                    })
+
+                }
             })
 
-            that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path] }) + "\r\n", () => {
-                resolve(true)
-            })
 
         });
 

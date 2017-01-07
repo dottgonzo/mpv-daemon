@@ -3,7 +3,7 @@ import * as chai from "chai";
 
 // import couchauth= require("../index");
 
-import {mpvdaemon } from "../index";
+import { mpvdaemon } from "../index";
 
 
 const Player = new mpvdaemon()
@@ -18,7 +18,33 @@ describe("mpv class", function () {
         it("expect return an object", function () {
             expect(Player).to.be.ok;
         });
+        it("expect to have property playlist", function () {
+            expect(Player).to.have.property('playlist').that.is.an('array');
+        });
     });
+
+
+    describe("playlist", function () {
+
+        it("load a playlist", function (done) {
+            Player.loadListfromFile(__dirname + "/test/playlist.pls").then((a)=>{
+            expect(Player.playlist.length).to.be.eq(2);
+            expect(Player.playlist[0]).to.have.property('title');
+            expect(Player.playlist[0]).to.have.property('uri');
+            expect(Player.playlist[0]).to.have.property('label');
+
+                setTimeout(function () {
+                    done()
+                }, 10000)
+
+            }).catch((err)=>{
+                expect(err).to.not.exist
+                done()
+            })
+        });
+
+    });
+
     describe("start with a video", function () {
 
         it("expect a video", function (done) {
