@@ -1,6 +1,6 @@
 {
   "name": "mpv-daemon",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "mpv daemon",
   "main": "index.js",
   "scripts": {
