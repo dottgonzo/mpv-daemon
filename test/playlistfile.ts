@@ -12,7 +12,7 @@ const Player = new mpvdaemon()
 
 const expect = chai.expect;
 
-describe("mpv class", function () {
+describe("mpv class playlist from file", function () {
     describe("configuration", function () {
 
         it("expect return an object", function () {
@@ -47,20 +47,16 @@ describe("mpv class", function () {
 
     describe("playlist", function () {
 
-
-        it("load a playlist from object", function (done) {
+        it("load a playlist from file", function (done) {
             this.timeout(50000);
 
-            Player.loadList([{ uri: __dirname + "/../videos/best.mkv" }, { title: "test2", uri: __dirname + "/../videos/what.mkv" }]).then((a) => {
+            Player.loadListfromFile(__dirname + "/localplaylist.pls", true).then((a) => {
                 expect(Player.playlist.length).to.be.eq(2);
-                expect(Player.playlist[0]).to.have.property('uri').that.eq(__dirname + "/../videos/best.mkv");
-                expect(Player.playlist[0]).to.have.property('label').that.is.a("string");
-                expect(Player.playlist[1]).to.have.property('title').that.eq("test2");
-                expect(Player.playlist[1]).to.have.property('uri').that.eq(__dirname + "/../videos/what.mkv");
-                expect(Player.playlist[1]).to.have.property('label').that.is.a("string");
+                expect(Player.playlist[0]).to.have.property('title');
+                expect(Player.playlist[0]).to.have.property('uri');
+                expect(Player.playlist[0]).to.have.property('label');
 
-
-            //    expect(Player.playing).to.be.ok;
+                expect(Player.playing).to.be.ok;
 
 
                 setTimeout(function () {
@@ -74,9 +70,14 @@ describe("mpv class", function () {
             })
         });
 
-        it("player is still running", function () {
+        it("player is running now", function () {
             expect(Player).to.have.property('playing').that.is.ok
         });
+        it("The track is the number 1", function () {
+            expect(Player).to.have.property('track').that.eq(1)
+        });
+
+
 
         it("switch to next track what", function (done) {
             this.timeout(50000);
