@@ -36,7 +36,12 @@ describe("mpv class", function () {
                 done()
             })
         });
-
+        it("player is now daemonized", function () {
+            expect(Player).to.have.property('daemonized').that.is.ok
+        });
+        it("player is not playing now", function () {
+            expect(Player).to.have.property('playing').that.is.not.ok
+        });
     });
 
 
@@ -51,6 +56,9 @@ describe("mpv class", function () {
                 expect(Player.playlist[0]).to.have.property('uri');
                 expect(Player.playlist[0]).to.have.property('label');
 
+                expect(Player.playing).to.be.ok;
+
+
                 setTimeout(function () {
                     done()
                 }, 3000)
@@ -62,28 +70,81 @@ describe("mpv class", function () {
             })
         });
 
-
+        it("player is running now", function () {
+            expect(Player).to.have.property('playing').that.is.ok
+        });
+        it("The track is the number 1", function () {
+            expect(Player).to.have.property('track').that.eq(1)
+        });
 
 
         it("load a playlist from object", function (done) {
             this.timeout(50000);
 
-            Player.loadList([{ title: "test0", uri: __dirname + "/../videos/best.mkv" }, { title: "test2", uri: __dirname + "/../videos/what.mkv" }]).then((a) => {
+            Player.loadList([{ uri: __dirname + "/../videos/best.mkv" }, { title: "test2", uri: __dirname + "/../videos/what.mkv" }]).then((a) => {
                 expect(Player.playlist.length).to.be.eq(2);
-                expect(Player.playlist[0]).to.have.property('title');
-                expect(Player.playlist[0]).to.have.property('uri');
-                expect(Player.playlist[0]).to.have.property('label');
+                expect(Player.playlist[0]).to.have.property('uri').that.eq(__dirname + "/../videos/best.mkv");
+                expect(Player.playlist[0]).to.have.property('label').that.is.a("string");
+                expect(Player.playlist[1]).to.have.property('title').that.eq("test2");
+                expect(Player.playlist[1]).to.have.property('uri').that.eq(__dirname + "/../videos/what.mkv");
+                expect(Player.playlist[1]).to.have.property('label').that.is.a("string");
+
+
+                expect(Player.playing).to.be.ok;
+
 
                 setTimeout(function () {
                     done()
                 }, 3000)
 
             }).catch((err) => {
-                console.log(err)
                 expect(err).to.not.exist
                 done()
             })
         });
+
+        it("player is still running", function () {
+            expect(Player).to.have.property('playing').that.is.ok
+        });
+
+        it("switch to next track what", function (done) {
+            this.timeout(50000);
+
+            Player.next().then((a) => {
+                expect(Player.playlist.length).to.be.eq(2);
+                expect(Player).to.have.property('track').that.eq(2)
+
+
+                setTimeout(function () {
+                    done()
+                }, 3000)
+
+            }).catch((err) => {
+                expect(err).to.not.exist
+                done()
+            })
+        });
+
+
+        it("switch to prev track best", function (done) {
+            this.timeout(50000);
+
+            Player.prev().then((a) => {
+                expect(Player.playlist.length).to.be.eq(2);
+                expect(Player).to.have.property('track').that.eq(1)
+
+
+                setTimeout(function () {
+                    done()
+                }, 3000)
+
+            }).catch((err) => {
+                expect(err).to.not.exist
+                done()
+            })
+        });
+
+
 
     });
     describe("start with a video", function () {
@@ -93,6 +154,10 @@ describe("mpv class", function () {
 
             Player.play(__dirname + "/../videos/hoedown.mp4").then(function () {
                 expect(Player).to.be.ok;
+                expect(Player.playlist.length).to.be.eq(1);
+                expect(Player).to.have.property('track').that.eq(1)
+
+
                 setTimeout(function () {
                     done()
                 }, 3000)
@@ -103,6 +168,8 @@ describe("mpv class", function () {
             this.timeout(50000);
             Player.start(__dirname + "/../videos/toccata.mp4").then(function () {
                 expect(Player).to.be.ok;
+                expect(Player.playlist.length).to.be.eq(1);
+                expect(Player).to.have.property('track').that.eq(1)
                 setTimeout(function () {
                     done()
                 }, 3000)

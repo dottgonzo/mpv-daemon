@@ -23,14 +23,12 @@ interface Impvconf {
     socketfile?: string;
     socketconf?: string;
 }
-interface ImpvPlaylist {
 
-}
 
 
 export class mpvdaemon {
 
-    playlist: ImpvPlaylist[] = [];
+    playlist: ITrack[] = [];
     track: number = 0
     uri: string = ""
     daemonized: boolean = false;
@@ -98,6 +96,100 @@ export class mpvdaemon {
         })
 
     }
+
+    switch(target: number) { // relative 
+        const that = this;
+
+        return new Promise<true>((resolve, reject) => {
+
+            if (target > 0) {
+                that.next(target).then((a) => {
+                    resolve(a)
+                }).catch((err) => {
+                    reject(err)
+                })
+            } else if (target === 0) {
+                reject({ error: "nothing to do" })
+            } else {
+                that.prev(target).then((a) => {
+                    resolve(a)
+                }).catch((err) => {
+                    reject(err)
+                })
+            }
+
+        })
+    }
+
+    next(target?: number) {
+        const that = this;
+
+        return new Promise<true>((resolve, reject) => {
+            if (!target || target === 1) {
+                that.mpv_process.write(JSON.stringify({ "command": ["playlist-next"] }) + "\r\n", () => {
+                    if (that.track < that.playlist.length) {
+                        _.map(that.playlist, (p, i) => {
+
+                            if (i !== (that.track + 1)) {
+                                that.uri = p.uri
+                            }
+                        })
+                        that.track += 1
+                    } resolve(true)
+                });
+            } else {
+                that.to(that.track + target).then((a) => {
+                    resolve(a)
+                }).catch((err) => {
+                    reject(err)
+                })
+            }
+
+
+
+        })
+    }
+    prev(target?: number) {
+        const that = this;
+
+        return new Promise<true>((resolve, reject) => {
+            if (!target || target === 1) {
+                that.mpv_process.write(JSON.stringify({ "command": ["playlist-prev"] }) + "\r\n", () => {
+                    if (that.track > 1) {
+
+                        _.map(that.playlist, (p, i) => {
+
+                            if (i !== (that.track - 1)) {
+                                that.uri = p.uri
+                            }
+                        })
+                        that.track += -1
+
+
+                    }
+                    resolve(true)
+                });
+            } else {
+                that.to(that.track + Math.abs(target)).then((a) => {
+                    resolve(a)
+                }).catch((err) => {
+                    reject(err)
+                })
+            }
+
+        })
+    }
+    to(target: number) {
+        const that = this;
+
+        return new Promise<true>((resolve, reject) => {
+
+            reject("todo")
+
+
+        })
+    }
+
 
     stop() {
         const that = this;
@@ -256,7 +348,7 @@ export class mpvdaemon {
 
             const filepath = "/tmp/mpvfilelist_" + new Date().getTime() + ".pls"
 
-console.log(filepath)
+            console.log(filepath)
 
             let filelist = "[playlist]\n\nFile1=" + track.uri + "\n"
 
@@ -293,12 +385,28 @@ console.log(filepath)
     clearList() {
         const that = this;
         return new Promise<true>((resolve, reject) => {
+            if (that.playlist.length > 0) {
 
-            that.mpv_process.write(JSON.stringify({ "command": ["playlist-clear"] }) + "\r\n", () => {
-                that.playlist = []
+                let preserve: ITrack
+                that.mpv_process.write(JSON.stringify({ "command": ["playlist-clear"] }) + "\r\n", () => {
+                    _.map(that.playlist, (t) => {
+                        if (t.uri === that.uri) {
+                            preserve = t
+                        }
+                    })
+                    if (preserve) {
+                        that.playlist = [preserve]
+
+                    } else {
+                        that.playlist = []
+
+                    }
+                    resolve(true)
+                });
+            } else {
                 resolve(true)
-            });
 
+            }
 
         });
 
@@ -308,7 +416,6 @@ console.log(filepath)
         return new Promise<true>((resolve, reject) => {
 
             that.clearList().then(() => {
-                console.log("playlist cleared")
                 async.eachSeries(tracks, (track, cb) => {
                     that.addTrack(track).then((a) => {
                         cb()
@@ -319,11 +426,16 @@ console.log(filepath)
                     if (err) {
                         reject(err)
                     } else {
-                console.log("playlist loaded")
 
                         that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
-                                            console.log("playing")
+                            const replaylist = []
+                            _.map(that.playlist, (p) => {
 
+                                if (p.uri !== that.uri) {
+                                    replaylist.push(p)
+                                }
+                            })
+                            that.playlist = replaylist
                             resolve(true)
                         });
 
@@ -345,13 +457,77 @@ console.log(filepath)
         const that = this;
 
         return new Promise<true>((resolve, reject) => {
-            if (play_path) {
-                that.mpv_process.write(JSON.stringify({ "command": ["loadfile", play_path] }) + "\r\n", () => {
-                    resolve(true)
-                });
+            if (play_path) { // not working!!
+                if (that.playlist.length > 1) {
+                    that.clearList().then(() => {
+                        console.log(play_path)
+                        that.addTrack({ uri: play_path }).then(() => {
+                            that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
+                                that.playlist = []
 
-            } else if (that.playlist.length > 0) {
+                                that.playlist.push({ uri: play_path, label: uniqueid(6) })
+                                that.playing = true
+                                that.uri = play_path
+                                that.track = 1
+                                resolve(true)
+                            });
+
+                        }).catch((err) => {
+                            reject(err)
+                        })
+
+                    }).catch((err) => {
+                        that.addTrack({ uri: play_path }).then(() => {
+                            that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
+                                that.playlist = []
+
+                                that.playlist.push({ uri: play_path, label: uniqueid(6) })
+                                that.playing = true
+                                that.uri = play_path
+                                that.track = 1
+                                resolve(true)
+                            });
+
+                        }).catch((err) => {
+                            reject(err)
+                        })
+
+                    })
+                } else if(that.playlist.length===1){
+                        that.addTrack({ uri: play_path }).then(() => {
+                            that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
+                                that.playlist = []
+
+                                that.playlist.push({ uri: play_path, label: uniqueid(6) })
+                                that.playing = true
+                                that.uri = play_path
+                                that.track = 1
+                                resolve(true)
+                            });
+
+                        }).catch((err) => {
+                            reject(err)
+                        })
+                } else {
+                    that.mpv_process.write(JSON.stringify({ "command": ["loadfile", play_path] }) + "\r\n", () => {
+                        that.playlist.push({ uri: play_path, label: uniqueid(6) })
+
+                        that.playing = true
+                        that.uri = play_path
+                        that.track = 1
+                        resolve(true)
+                    });
+
+                }
+
+
+            } else if (that.playlist.length > 0 && !that.playing) {
+
                 that.mpv_process.write(JSON.stringify({ "command": ["play"] }) + "\r\n", () => {
+                    that.playing = true
+                    if (!that.track) that.track = 1
+                    if (!that.uri) that.uri = that.playlist[0].uri
+
                     resolve(true)
                 });
 
@@ -368,7 +544,11 @@ console.log(filepath)
 
         return new Promise<true>((resolve, reject) => {
 
+            that.mpv_process.write(JSON.stringify({ "command": ["play"] }) + "\r\n", () => {
+                that.playing = false
 
+                resolve(true)
+            });
 
         })
     }

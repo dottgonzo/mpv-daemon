@@ -1,0 +1,5 @@
+videos/
+test/
+typings/
+tsconfig.json
+*.ts
