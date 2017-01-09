@@ -342,7 +342,7 @@ export class mpvdaemon {
 
     }
 
-    addTrack(track:ITrack, index?: number) {
+    addTrack(track:ITrackload, index?: number) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
 
@@ -367,14 +367,14 @@ export class mpvdaemon {
                     if (that.playlist.length > 0) {
                         that.mpv_process.write(JSON.stringify({ "command": ["loadlist", filepath, "append"] }) + "\r\n", () => {
                             if (!track.label) track.label = uniqueid(4)
-                            that.playlist.push(track)
+                            that.playlist.push(<ITrack>track)
 
                             resolve(true)
                         });
                     } else {
                         that.mpv_process.write(JSON.stringify({ "command": ["loadlist", filepath] }) + "\r\n", () => {
                             if (!track.label) track.label = uniqueid(4)
-                            that.playlist.push(track)
+                            that.playlist.push(<ITrack>track)
 
                             resolve(true)
                         });
