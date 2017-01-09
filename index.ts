@@ -342,7 +342,7 @@ export class mpvdaemon {
 
     }
 
-    addTrack(track, index?: number) {
+    addTrack(track:ITrack, index?: number) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
 
