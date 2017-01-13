@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { mpvdaemon } from "../index";
 
 
-const Player = new mpvdaemon()
+const Player = new mpvdaemon({verbose:true})
 
 
 

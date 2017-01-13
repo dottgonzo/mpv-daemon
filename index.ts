@@ -22,6 +22,7 @@ interface ITrack extends ITrackload {
 interface Impvconf {
     socketfile?: string;
     socketconf?: string;
+    verbose: boolean;
 }
 
 
@@ -37,10 +38,13 @@ export class mpvdaemon {
     socket: any;
     socketfile: string = "/tmp/mpvsocket"
     socketconf: string = "--input-unix-socket"
+    verbose: boolean;
     constructor(conf?: Impvconf) {
         if (conf) {
             if (conf.socketfile) this.socketfile = conf.socketfile
             if (conf.socketconf) this.socketconf = conf.socketconf
+            if (conf.verbose) this.verbose = conf.verbose
+
         }
     }
 
@@ -50,7 +54,21 @@ export class mpvdaemon {
             if (!that.daemonized) {
 
                 try {
-                    spawn("mpv", ["--idle", that.socketconf + "=" + that.socketfile], { detached: true })
+                    const mpv = spawn("mpv", ["--idle", that.socketconf + "=" + that.socketfile], { detached: true })
+                    if (that.verbose) {
+                        mpv.stdin.on("data", (data) => {
+                            console.log("stdin: "+data)
+                        })
+                        mpv.stdout.on("data", (data) => {
+                            console.log("stdout: "+data)
+                        })
+        
+        
+
+                        mpv.on("error", (data) => {
+                            console.log("error: "+data)
+                        })
+                    }
                     setTimeout(() => {
 
                         that.mpv_process = net.createConnection(that.socketfile);
@@ -72,6 +90,13 @@ export class mpvdaemon {
                             }
 
                         });
+                        if (that.verbose) {
+                            that.mpv_process.on("data", function (data) { // add timeout
+                                console.log("mpvdata: "+data)
+                            });
+                        }
+
+
                     }, 5000)
 
                 } catch (err) {
@@ -342,7 +367,7 @@ export class mpvdaemon {
 
     }
 
-    addTrack(track:ITrackload, index?: number) {
+    addTrack(track: ITrackload, index?: number) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
 
@@ -435,16 +460,9 @@ export class mpvdaemon {
                         if (err) {
                             reject(err)
                         } else {
-
                             that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
-     
                                 resolve(true)
                             });
-
-
-
-
-
                         }
                     })
                 }).catch((err) => {
@@ -464,10 +482,10 @@ export class mpvdaemon {
                     } else {
 
                         //    that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
-  
-                        that.playing=true
-                        that.track=1
-                        that.uri=that.playlist[0].uri
+
+                        that.playing = true
+                        that.track = 1
+                        that.uri = that.playlist[0].uri
                         resolve(true)
                         //         });
 
