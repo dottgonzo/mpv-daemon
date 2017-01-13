@@ -54,19 +54,13 @@ export class mpvdaemon {
             if (!that.daemonized) {
 
                 try {
-                    const mpv = spawn("mpv", ["--idle", that.socketconf + "=" + that.socketfile], { detached: true })
+                    const mpv = spawn("mpv", ["--idle","--really-quiet", that.socketconf + "=" + that.socketfile], { detached: true,stdio:"ignore" })
                     if (that.verbose) {
-                        mpv.stdin.on("data", (data) => {
-                            console.log("stdin: "+data)
-                        })
-                        mpv.stdout.on("data", (data) => {
-                            console.log("stdout: "+data)
-                        })
-        
-        
+
+
 
                         mpv.on("error", (data) => {
-                            console.log("error: "+data)
+                            console.log("error: " + data)
                         })
                     }
                     setTimeout(() => {
@@ -92,7 +86,10 @@ export class mpvdaemon {
                         });
                         if (that.verbose) {
                             that.mpv_process.on("data", function (data) { // add timeout
-                                console.log("mpvdata: "+data)
+                                console.log("mpvdata: " + data)
+                            });
+                            that.mpv_process.on("error", function (data) { // add timeout
+                                console.log("mpverror: " + data)
                             });
                         }
 
@@ -268,18 +265,12 @@ export class mpvdaemon {
                 pathExists(playlist_path).then((a) => {
                     if (a) {
                         if (that.daemonized) {
-
-
                             fs.readFile(playlist_path, (err, data) => {
                                 if (err) {
                                     console.log("errload")
 
                                     reject({ error: err })
                                 } else {
-
-
-
-
                                     fs.readFile(playlist_path, function (err, data) {
                                         if (err) {
                                             console.log({ error: err })
@@ -326,20 +317,13 @@ export class mpvdaemon {
                                             } else {
                                                 that.mpv_process.write(JSON.stringify({ "command": ["loadlist", playlist_path, "replace"] }) + "\r\n", () => {
                                                     // parse file to load the list on class
-
                                                     resolve(true)
                                                 });
 
 
                                             }
-
-
-
                                         }
                                     })
-
-
-
 
                                 }
                             })
@@ -373,14 +357,11 @@ export class mpvdaemon {
 
             const filepath = "/tmp/mpvfilelist_" + new Date().getTime() + ".pls"
 
-            console.log(filepath)
+
 
             let filelist = "[playlist]\n\nFile1=" + track.uri + "\n"
 
             if (track.title) filelist += "Title1=" + track.title + "\n"
-
-
-
 
 
             filelist += "\nNumberOfEntries=1\nVersion=2\n"
@@ -393,14 +374,18 @@ export class mpvdaemon {
                         that.mpv_process.write(JSON.stringify({ "command": ["loadlist", filepath, "append"] }) + "\r\n", () => {
                             if (!track.label) track.label = uniqueid(4)
                             that.playlist.push(<ITrack>track)
-
+                            if (that.verbose) {
+                                console.log("start first track of a playlist")
+                            }
                             resolve(true)
                         });
                     } else {
                         that.mpv_process.write(JSON.stringify({ "command": ["loadlist", filepath] }) + "\r\n", () => {
                             if (!track.label) track.label = uniqueid(4)
                             that.playlist.push(<ITrack>track)
-
+                            if (that.verbose) {
+                                console.log("append track")
+                            }
                             resolve(true)
                         });
                     }
@@ -430,10 +415,12 @@ export class mpvdaemon {
                     })
                     if (preserve) {
                         that.playlist = [preserve]
-
                     } else {
                         that.playlist = []
+                    }
 
+                    if (that.verbose) {
+                        console.log("clear playlist")
                     }
                     resolve(true)
                 });
@@ -482,7 +469,9 @@ export class mpvdaemon {
                     } else {
 
                         //    that.mpv_process.write(JSON.stringify({ "command": ["playlist-remove", "current"] }) + "\r\n", () => {
-
+                        if (that.verbose) {
+                            console.log("playlist loaded")
+                        }
                         that.playing = true
                         that.track = 1
                         that.uri = that.playlist[0].uri
