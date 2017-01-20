@@ -48,7 +48,6 @@ export class mpvdaemon {
             if (conf.verbose) this.verbose = conf.verbose
             if (conf.verbose) this.verbose = conf.verbose
             if (conf.noaudio) this.noaudio = conf.noaudio
-
         }
     }
 
