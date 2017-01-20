@@ -8,9 +8,9 @@ import * as fs from "fs";
 import { uniqueid } from "unicoid";
 
 interface ITrackload {
-    title?: string;
-    label?: string;
-    uri: string;
+    title?: string
+    label?: string
+    uri: string
 
 }
 
@@ -20,9 +20,10 @@ interface ITrack extends ITrackload {
 }
 
 interface Impvconf {
-    socketfile?: string;
-    socketconf?: string;
-    verbose: boolean;
+    socketfile?: string
+    socketconf?: string
+    verbose?: boolean
+    noaudio?: boolean
 }
 
 
@@ -32,18 +33,21 @@ export class mpvdaemon {
     playlist: ITrack[] = [];
     track: number = 0
     uri: string = ""
-    daemonized: boolean = false;
+    daemonized: boolean = false
     playing: boolean = false
     mpv_process: any = false
-    socket: any;
+    socket: any
     socketfile: string = "/tmp/mpvsocket"
     socketconf: string = "--input-unix-socket"
-    verbose: boolean;
+    verbose: boolean
+    noaudio: boolean = false
     constructor(conf?: Impvconf) {
         if (conf) {
             if (conf.socketfile) this.socketfile = conf.socketfile
             if (conf.socketconf) this.socketconf = conf.socketconf
             if (conf.verbose) this.verbose = conf.verbose
+            if (conf.verbose) this.verbose = conf.verbose
+            if (conf.noaudio) this.noaudio = conf.noaudio
 
         }
     }
@@ -54,11 +58,14 @@ export class mpvdaemon {
             if (!that.daemonized) {
 
                 try {
-                    const mpv = spawn("mpv", ["--idle","--really-quiet", that.socketconf + "=" + that.socketfile], { detached: true,stdio:"ignore" })
+                    let mpv
+                    if (that.noaudio) {
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--no-audio",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+
+                    } else {
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                    }
                     if (that.verbose) {
-
-
-
                         mpv.on("error", (data) => {
                             console.log("error: " + data)
                         })
