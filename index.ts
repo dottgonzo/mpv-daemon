@@ -58,8 +58,8 @@ export class mpvdaemon {
 
                 try {
                     let mpv
-                    if (that.noaudio) {
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-audio",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                    if (that.noaudio) { // todo demuxer-readahead-packets=300 separate
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-audio","--demuxer-readahead-packets=300",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
 
                     } else {
                         mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
