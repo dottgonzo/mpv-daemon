@@ -59,10 +59,10 @@ export class mpvdaemon {
                 try {
                     let mpv
                     if (that.noaudio) {
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--no-audio",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-audio",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
 
                     } else {
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
                     }
                     if (that.verbose) {
                         mpv.on("error", (data) => {
