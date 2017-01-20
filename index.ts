@@ -361,7 +361,7 @@ export class mpvdaemon {
         const that = this;
         return new Promise<true>((resolve, reject) => {
 
-            const filepath = "/tmp/mpvfilelist_" + new Date().getTime() + ".pls"
+            const filepath = "/tmp/mpvfilelist_"+uniqueid(6)+"_" + new Date().getTime() + ".pls"
 
 
 
