@@ -51,7 +51,7 @@ export class mpvdaemon {
         }
     }
 
-    start(play_path?: string) {
+    start(options?: string[]) {
         const that = this;
         return new Promise<true>((resolve, reject) => {
             if (!that.daemonized) {
@@ -59,7 +59,10 @@ export class mpvdaemon {
                 try {
                     let mpv
                     if (that.noaudio) { // todo demuxer-readahead-packets=300 separate
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-audio",that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-audio", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                    } else if (options) {
+                        options.push(that.socketconf + "=" + that.socketfile)
+                        mpv = spawn("mpv", options, { detached: true, stdio: "ignore" })
 
                     } else {
                         mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
@@ -361,7 +364,7 @@ export class mpvdaemon {
         const that = this;
         return new Promise<true>((resolve, reject) => {
 
-            const filepath = "/tmp/mpvfilelist_"+uniqueid(6)+"_" + new Date().getTime() + ".pls"
+            const filepath = "/tmp/mpvfilelist_" + uniqueid(6) + "_" + new Date().getTime() + ".pls"
 
 
 
