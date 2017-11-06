@@ -63,7 +63,7 @@ export class mpvdaemon {
                     let mpv
                     if (that.noaudio) { // todo demuxer-readahead-packets=300 separate
                         const mpvoptions = ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile]
-                        if (that.fullscreen) options.push('--fullscreen')                        
+                        if (that.fullscreen) mpvoptions.push('--fullscreen')                        
                         mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     } else if (options) {
                         options.push(that.socketconf + "=" + that.socketfile)
@@ -71,7 +71,7 @@ export class mpvdaemon {
                         mpv = spawn("mpv", options, { detached: true, stdio: "ignore" })
                     } else {
                         const mpvoptions = ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile]
-                        if (that.fullscreen) options.push('--fullscreen')
+                        if (that.fullscreen) mpvoptions.push('--fullscreen')
                         mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     }
                     if (that.verbose) {

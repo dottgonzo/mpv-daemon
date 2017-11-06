@@ -43,7 +43,7 @@ var mpvdaemon = (function () {
                     if (that.noaudio) {
                         var mpvoptions = ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile];
                         if (that.fullscreen)
-                            options.push('--fullscreen');
+                            mpvoptions.push('--fullscreen');
                         mpv = child_process_1.spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" });
                     }
                     else if (options) {
@@ -55,7 +55,7 @@ var mpvdaemon = (function () {
                     else {
                         var mpvoptions = ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile];
                         if (that.fullscreen)
-                            options.push('--fullscreen');
+                            mpvoptions.push('--fullscreen');
                         mpv = child_process_1.spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" });
                     }
                     if (that.verbose) {
