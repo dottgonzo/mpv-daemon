@@ -19,6 +19,7 @@ var mpvdaemon = (function () {
         this.socketconf = "--input-unix-socket";
         this.noaudio = false;
         this.fullscreen = false;
+        this.nocache = false;
         if (conf) {
             if (conf.socketfile)
                 this.socketfile = conf.socketfile;
@@ -32,6 +33,8 @@ var mpvdaemon = (function () {
                 this.noaudio = conf.noaudio;
             if (conf.fullscreen)
                 this.fullscreen = conf.fullscreen;
+            if (conf.nocache)
+                this.nocache = conf.nocache;
         }
     }
     mpvdaemon.prototype.start = function (options) {
@@ -44,18 +47,24 @@ var mpvdaemon = (function () {
                         var mpvoptions = ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile];
                         if (that.fullscreen)
                             mpvoptions.push('--fullscreen');
+                        if (that.nocache)
+                            mpvoptions.push('--no-cache');
                         mpv = child_process_1.spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" });
                     }
                     else if (options) {
                         options.push(that.socketconf + "=" + that.socketfile);
                         if (that.fullscreen)
                             options.push('--fullscreen');
+                        if (that.nocache)
+                            options.push('--no-cache');
                         mpv = child_process_1.spawn("mpv", options, { detached: true, stdio: "ignore" });
                     }
                     else {
                         var mpvoptions = ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile];
                         if (that.fullscreen)
                             mpvoptions.push('--fullscreen');
+                        if (that.nocache)
+                            mpvoptions.push('--no-cache');
                         mpv = child_process_1.spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" });
                     }
                     if (that.verbose) {

@@ -25,6 +25,7 @@ interface Impvconf {
     verbose?: boolean
     noaudio?: boolean
     fullscreen?: boolean
+    nocache?: boolean
 }
 
 
@@ -43,6 +44,7 @@ export class mpvdaemon {
     verbose: boolean
     noaudio: boolean = false
     fullscreen:boolean = false
+    nocache:boolean = false
     constructor(conf?: Impvconf) {
         if (conf) {
             if (conf.socketfile) this.socketfile = conf.socketfile
@@ -51,6 +53,7 @@ export class mpvdaemon {
             if (conf.verbose) this.verbose = conf.verbose
             if (conf.noaudio) this.noaudio = conf.noaudio
             if (conf.fullscreen) this.fullscreen = conf.fullscreen            
+            if (conf.nocache) this.nocache = conf.nocache
         }
     }
 
@@ -64,14 +67,17 @@ export class mpvdaemon {
                     if (that.noaudio) { // todo demuxer-readahead-packets=300 separate
                         const mpvoptions = ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile]
                         if (that.fullscreen) mpvoptions.push('--fullscreen')                        
+                        if (that.nocache) mpvoptions.push('--no-cache')                                                
                         mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     } else if (options) {
                         options.push(that.socketconf + "=" + that.socketfile)
                         if (that.fullscreen) options.push('--fullscreen')
+                        if (that.nocache) options.push('--no-cache')                                                                        
                         mpv = spawn("mpv", options, { detached: true, stdio: "ignore" })
                     } else {
                         const mpvoptions = ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile]
                         if (that.fullscreen) mpvoptions.push('--fullscreen')
+                        if (that.nocache) mpvoptions.push('--no-cache')
                         mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     }
                     if (that.verbose) {
