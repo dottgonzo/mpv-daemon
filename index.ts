@@ -24,6 +24,7 @@ interface Impvconf {
     socketconf?: string
     verbose?: boolean
     noaudio?: boolean
+    fullscreen?: boolean
 }
 
 
@@ -41,6 +42,7 @@ export class mpvdaemon {
     socketconf: string = "--input-unix-socket"
     verbose: boolean
     noaudio: boolean = false
+    fullscreen:boolean = false
     constructor(conf?: Impvconf) {
         if (conf) {
             if (conf.socketfile) this.socketfile = conf.socketfile
@@ -48,6 +50,7 @@ export class mpvdaemon {
             if (conf.verbose) this.verbose = conf.verbose
             if (conf.verbose) this.verbose = conf.verbose
             if (conf.noaudio) this.noaudio = conf.noaudio
+            if (conf.fullscreen) this.fullscreen = conf.fullscreen            
         }
     }
 
@@ -59,13 +62,17 @@ export class mpvdaemon {
                 try {
                     let mpv
                     if (that.noaudio) { // todo demuxer-readahead-packets=300 separate
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                        const mpvoptions = ["--idle", "--really-quiet", "--loop=force", "--no-osc", "--no-audio", that.socketconf + "=" + that.socketfile]
+                        if (that.fullscreen) options.push('--fullscreen')                        
+                        mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     } else if (options) {
                         options.push(that.socketconf + "=" + that.socketfile)
+                        if (that.fullscreen) options.push('--fullscreen')
                         mpv = spawn("mpv", options, { detached: true, stdio: "ignore" })
-
                     } else {
-                        mpv = spawn("mpv", ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile], { detached: true, stdio: "ignore" })
+                        const mpvoptions = ["--idle", "--really-quiet", "--loop=force", that.socketconf + "=" + that.socketfile]
+                        if (that.fullscreen) options.push('--fullscreen')
+                        mpv = spawn("mpv", mpvoptions, { detached: true, stdio: "ignore" })
                     }
                     if (that.verbose) {
                         mpv.on("error", (data) => {
@@ -100,14 +107,6 @@ export class mpvdaemon {
                     reject(err)
                 }
 
-
-            } else if (play_path) {
-                that.play(play_path).then(function () {
-                    resolve(true)
-                }).catch(function (err) {
-                    reject(err)
-
-                })
 
             } else {
                 reject({ error: "player is running" })
